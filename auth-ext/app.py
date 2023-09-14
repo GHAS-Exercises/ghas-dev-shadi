@@ -1,5 +1,6 @@
 import base64
 import os
+import re
 
 from flask import Flask, g, redirect, request, abort, session, url_for
 from flask_cors import CORS
@@ -59,6 +60,7 @@ def get_user_profile(access_token):
 
 @app.route("/authenticate/<code>")
 def authenticate(code):
+    code = sanitize_input(code)
     app.logger.debug("Received authentication request with code: %s", code)
     access_info, error = get_access_token(code)
 
@@ -80,6 +82,10 @@ def authenticate(code):
     token = jwt.encode(claimset, 'secretsecret1234secretsecret1234', algorithm='HS256')
 
     return {'token': token.decode()}
+
+    def sanitize_input(input_str):
+    # Remove any non-alphanumeric characters from the input string
+    return re.sub(r'\W+', '', input_str)
 
 if __name__ == "__main__":
     app.run(
